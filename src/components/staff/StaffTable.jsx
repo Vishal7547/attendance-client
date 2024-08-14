@@ -22,7 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import { useUser } from "../../context/UserProvider";
-
+import Chip from "@mui/material/Chip";
 function createData(id, name, calories, fat, carbs, protein, Attendance) {
   return {
     id,
@@ -402,7 +402,10 @@ export default function StaffTable() {
                     </Box>
                   </TableCell>
                   <TableCell align="left">
-                    {row.active ? "Active" : "In-active"}
+                    <Chip
+                      label={row.active ? "Active" : "In-active"}
+                      color={row.active ? "success" : "error"}
+                    />
                   </TableCell>
                 </TableRow>
               );

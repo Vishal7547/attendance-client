@@ -24,6 +24,7 @@ import { visuallyHidden } from "@mui/utils";
 import SelectAttendanceType from "../../model/SelectAttendanceType";
 import useeModel from "../../customHooks/useModel.js";
 import { useUser } from "../../context/UserProvider.jsx";
+import { Chip } from "@mui/material";
 function createData(id, name, calories, fat, carbs, protein, Attendance) {
   return {
     id,
@@ -111,6 +112,12 @@ const headCells = [
     numeric: true,
     disablePadding: false,
     label: "Phone",
+  },
+  {
+    id: "accountActive",
+    numeric: true,
+    disablePadding: false,
+    label: "accountActive",
   },
   {
     id: "Attendance",
@@ -373,7 +380,16 @@ export default function UserTable() {
                     {row.userBranch?.branchName}
                   </TableCell>
                   <TableCell align="left">{row.userPhone}</TableCell>
-
+                  <TableCell align="left">
+                    <Chip
+                      label={
+                        row.accountActive !== "pending" ? "Active" : "In-active"
+                      }
+                      color={
+                        row.accountActive !== "pending" ? "success" : "error"
+                      }
+                    />
+                  </TableCell>
                   <TableCell align="left" onClick={handleOpen}>
                     View
                   </TableCell>
