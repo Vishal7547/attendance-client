@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import { Grid, Button, Chip } from "@mui/material";
+import { Grid, Button, Chip, FormHelperText, Alert } from "@mui/material";
 import Divider from "@mui/material/Divider";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -11,6 +11,10 @@ import Select from "@mui/material/Select";
 
 import TakeAttendance from "../confirm/TakeAttendance";
 import useModelHooks from "../customHooks/useModel";
+import { useUser } from "../context/UserProvider";
+import { FaBullseye } from "react-icons/fa";
+import axios from "axios";
+import { useAttendance } from "../context/AttendanceProvider";
 
 const style = {
   position: "absolute",
@@ -26,15 +30,138 @@ const style = {
 };
 
 const SelectSubjects = ({ open, handleClose }) => {
+  const { user, session, semester } = useUser();
+  const { setAttendanceStudents } = useAttendance();
+  const [selectSubject, setSelectSubject] = useState([]);
+  const [sessionRecord, setSessionRecord] = useState("");
+  const [semesterRecord, setSemesterRecord] = useState("");
+  const [branch, setBranch] = useState("");
+  const [subject, setSubject] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState({
+    sessionRecord: "",
+    semesterRecord: "",
+    backendError: "",
+    branch: "",
+    subject: "",
+    success: "",
+  });
+  const [isError, setIsError] = useState({
+    sessionRecord: false,
+    semesterRecord: false,
+    backendError: false,
+    branch: false,
+    subject: false,
+    success: false,
+  });
+  useEffect(() => {
+    const timeClear = setTimeout(() => {
+      setIsError((prev) => ({ ...prev, backendError: false }));
+    }, 2000);
+    return () => {
+      clearTimeout(timeClear);
+    };
+  }, [isError?.backendError]);
+  useEffect(() => {
+    const filtered = user?.userAssignSubject.filter(
+      (s) => s?.branch === branch
+    );
+
+    setSelectSubject(filtered);
+  }, [branch]);
+
   const {
     open: open1,
     handleClose: handleClose1,
     handleOpen: handleOpen1,
   } = useModelHooks();
 
-  const handleNext = () => {
-    handleClose();
-    handleOpen1();
+  const handleNext = async () => {
+    if (!sessionRecord) {
+      setError((prev) => ({
+        ...prev,
+        sessionRecord: "sessionRecord is missing",
+      }));
+      setIsError((prev) => ({ ...prev, sessionRecord: true }));
+      return;
+    } else {
+      setError((prev) => ({ ...prev, sessionRecord: "" }));
+      setIsError((prev) => ({ ...prev, sessionRecord: false }));
+    }
+    if (!semesterRecord) {
+      setError((prev) => ({
+        ...prev,
+        semesterRecord: "semesterRecord is missing",
+      }));
+      setIsError((prev) => ({ ...prev, semesterRecord: true }));
+      return;
+    } else {
+      setError((prev) => ({ ...prev, semesterRecord: "" }));
+      setIsError((prev) => ({ ...prev, semesterRecord: false }));
+    }
+
+    if (!branch) {
+      setError((prev) => ({ ...prev, branch: "branch is missing" }));
+      setIsError((prev) => ({ ...prev, branch: true }));
+      return;
+    } else {
+      setError((prev) => ({ ...prev, branch: "" }));
+      setIsError((prev) => ({ ...prev, branch: false }));
+    }
+    if (!subject) {
+      setError((prev) => ({ ...prev, subject: "subject is missing" }));
+      setIsError((prev) => ({ ...prev, subject: true }));
+      return;
+    } else {
+      setError((prev) => ({ ...prev, subject: "" }));
+      setIsError((prev) => ({ ...prev, subject: false }));
+    }
+    try {
+      setLoading(true);
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/attendance/default`,
+        {
+          session: sessionRecord,
+          semester: semesterRecord,
+          branch: branch,
+          subject: subject,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      if (data.success) {
+        console.log(data);
+        // setAttendanceStudents(data?.attendanceStudents);
+        setLoading(false);
+        handleClose();
+        handleOpen1();
+        // handleClear();
+
+        // navigate("/staff");
+      } else {
+        console.log(data.message);
+        setIsError((prev) => ({ ...prev, backendError: true }));
+        setError((prev) => ({
+          ...prev,
+          backendError: data?.message,
+        }));
+        setLoading(false);
+      }
+      // handleClear();
+    } catch (e) {
+      setIsError((prev) => ({ ...prev, backendError: true }));
+      setError((prev) => ({
+        ...prev,
+        backendError: e.response?.data?.message || "An error occurred",
+      }));
+      console.log(e.message);
+      setLoading(false);
+    }
   };
   const message = {
     heading: "Are you sure you want to take attendance?",
@@ -70,16 +197,23 @@ const SelectSubjects = ({ open, handleClose }) => {
                     labelId="demo-simple-select-standard-label"
                     id="demo-simple-select-standard"
                     label="Session"
+                    value={sessionRecord}
+                    onChange={(e) => setSessionRecord(e.target.value)}
+                    error={isError.sessionRecord}
                   >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    <MenuItem value={10}>2020-2024</MenuItem>
-                    <MenuItem value={20}>2021-2025</MenuItem>
-                    <MenuItem value={30}>2022-2026</MenuItem>
-                    <MenuItem value={10}>2023-2027</MenuItem>
-                    <MenuItem value={20}>2024-2028</MenuItem>
+                    {session?.map((s) => (
+                      <MenuItem value={s?._id} key={s?._id}>
+                        {s?.sessionName}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  <FormHelperText
+                    sx={{
+                      color: "red",
+                    }}
+                  >
+                    {error?.sessionRecord}
+                  </FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
@@ -91,19 +225,51 @@ const SelectSubjects = ({ open, handleClose }) => {
                     labelId="demo-simple-select-standard-label"
                     id="demo-simple-select-standard"
                     label="Sem"
+                    value={semesterRecord}
+                    onChange={(e) => setSemesterRecord(e.target.value)}
+                    error={isError.semesterRecord}
                   >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    <MenuItem value={10}>1</MenuItem>
-                    <MenuItem value={20}>2</MenuItem>
-                    <MenuItem value={10}>3</MenuItem>
-                    <MenuItem value={20}>4</MenuItem>
-                    <MenuItem value={10}>5</MenuItem>
-                    <MenuItem value={20}>6</MenuItem>
-                    <MenuItem value={10}>7</MenuItem>
-                    <MenuItem value={20}>8</MenuItem>
+                    {semester?.map((s) => (
+                      <MenuItem value={s?._id} key={s?._id}>
+                        {s?.semesterName}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  <FormHelperText
+                    sx={{
+                      color: "red",
+                    }}
+                  >
+                    {error?.semesterRecord}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl variant="standard" sx={{ width: "100%" }}>
+                  <InputLabel id="demo-simple-select-standard-label">
+                    Branch
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-standard-label"
+                    id="demo-simple-select-standard"
+                    label="Sub"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    error={isError.branch}
+                  >
+                    {user?.userDepartment?.map((s) => (
+                      <MenuItem value={s?._id} key={s?._id}>
+                        {s?.branchName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText
+                    sx={{
+                      color: "red",
+                    }}
+                  >
+                    {error?.branch}
+                  </FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
@@ -115,15 +281,23 @@ const SelectSubjects = ({ open, handleClose }) => {
                     labelId="demo-simple-select-standard-label"
                     id="demo-simple-select-standard"
                     label="Sub"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    error={isError.subject}
                   >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    <MenuItem value={10}>VLSI</MenuItem>
-                    <MenuItem value={20}>IOT</MenuItem>
-                    <MenuItem value={10}>MEMS</MenuItem>
-                    <MenuItem value={20}>WS</MenuItem>
+                    {selectSubject?.map((s) => (
+                      <MenuItem value={s?._id} key={s?._id}>
+                        {s?.subjectName}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  <FormHelperText
+                    sx={{
+                      color: "red",
+                    }}
+                  >
+                    {error?.subject}
+                  </FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
@@ -140,6 +314,21 @@ const SelectSubjects = ({ open, handleClose }) => {
         handleClose={handleClose1}
         message={message}
       />
+      {isError?.backendError && (
+        <Alert
+          variant="filled"
+          severity="error"
+          sx={{
+            position: "fixed",
+            top: 30,
+            left: 0,
+            zIndex: 9999,
+            margin: 1,
+          }}
+        >
+          {error?.backendError}
+        </Alert>
+      )}
     </>
   );
 };

@@ -19,6 +19,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import { useMultiTheme } from "../../context/ThemeProvider";
 import AccountSetting from "../Account/AccountSetting";
+import { useUser } from "../../context/UserProvider";
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   width: 62,
@@ -113,6 +114,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function Navbar({ open, handleDrawerOpen }) {
+  const { user } = useUser();
   const [checked, setChecked] = React.useState(true);
   const { toggleTheme } = useMultiTheme();
   const handleChange = (event) => {
@@ -270,10 +272,8 @@ export default function Navbar({ open, handleDrawerOpen }) {
           />
         </Search>
         <Box sx={{ flexGrow: 1, position: "relative" }} />
-        <Box
-
-        // sx={{ display: { xs: "none", md: "flex" } }}
-        >
+        <Box>
+          <Typography variant="p">{user?.userName}</Typography>
           <IconButton
             size="large"
             aria-label="show 4 new mails"

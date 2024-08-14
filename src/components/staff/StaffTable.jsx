@@ -21,6 +21,7 @@ import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
+import { useUser } from "../../context/UserProvider";
 
 function createData(id, name, calories, fat, carbs, protein, Attendance) {
   return {
@@ -35,20 +36,28 @@ function createData(id, name, calories, fat, carbs, protein, Attendance) {
 }
 
 const rows = [
-  createData(1, "Cupcake", 305, 3.7, 67, 4.3, 2),
-  createData(2, "Donut", 452, 25.0, 51, 4.9, 2),
-  createData(3, "Eclair", 262, 16.0, 24, 6.0, 2),
-  createData(4, "Frozen yoghurt", 159, 6.0, 24, 4.0, 2),
-  createData(5, "Gingerbread", 356, 16.0, 49, 3.9, 2),
-  createData(6, "Honeycomb", 408, 3.2, 87, 6.5, 2),
-  createData(7, "Ice cream sandwich", 237, 9.0, 37, 4.3, 2),
-  createData(8, "Jelly Bean", 375, 0.0, 94, 0.0, 5),
-  2,
-  createData(9, "KitKat", 518, 26.0, 65, 7.0, 2),
-  createData(10, "Lollipop", 392, 0.2, 98, 0.0, 2),
-  createData(11, "Marshmallow", 318, 0, 81, 2.0, 2),
-  createData(12, "Nougat", 360, 19.0, 9, 37.0, 2),
-  createData(13, "Oreo", 437, 18.0, 63, 4.0, 2),
+  createData(1, "Mohit Kumar", "pce@gmail.com", "ECE", "IOT", "active", 2),
+  createData(
+    2,
+    "Dheeraj Kumar",
+    "pce@gmail.com",
+    "ECE",
+    "Satellite Communication",
+    "active",
+    2
+  ),
+  createData(
+    3,
+    "Anupam Jha",
+    "pce@gmail.com",
+    "ECE",
+    "Digital Communication",
+    "active",
+    2
+  ),
+  createData(4, "Parveen Kumar", "pce@gmail.com", "ECE", "MEMS", "active", 2),
+  createData(5, "Ajay Kumar", "pce@gmail.com", "ECE", "none", "active", 2),
+  createData(6, "Sourav Kumar", "pce@gmail.com", "ECE", "none", "inactive", 2),
 ];
 
 function descendingComparator(a, b, orderBy) {
@@ -87,25 +96,32 @@ const headCells = [
     label: "Name",
   },
   {
-    id: "calories",
+    id: "email",
     numeric: true,
     disablePadding: false,
     label: "Email",
   },
   {
-    id: "fat",
+    id: "role",
+    numeric: true,
+    disablePadding: false,
+    label: "Role",
+  },
+  {
+    id: "branch",
     numeric: true,
     disablePadding: false,
     label: "Branch",
   },
   {
-    id: "carbs",
+    id: "subject",
     numeric: true,
     disablePadding: false,
     label: "Subject",
   },
+
   {
-    id: "protein",
+    id: "status",
     numeric: true,
     disablePadding: false,
     label: "Status",
@@ -234,6 +250,7 @@ EnhancedTableToolbar.propTypes = {
 };
 
 export default function StaffTable() {
+  const { teacher } = useUser();
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
   const [selected, setSelected] = React.useState([]);
@@ -321,25 +338,25 @@ export default function StaffTable() {
             rowCount={rows.length}
           />
           <TableBody>
-            {visibleRows.map((row, index) => {
-              const isItemSelected = isSelected(row.id);
+            {teacher.map((row, index) => {
+              // const isItemSelected = isSelected(row.id);
               const labelId = `enhanced-table-checkbox-${index}`;
 
               return (
                 <TableRow
                   hover
-                  onClick={(event) => handleClick(event, row.id)}
+                  // onClick={(event) => handleClick(event, row.id)}
                   role="checkbox"
-                  aria-checked={isItemSelected}
+                  // aria-checked={isItemSelected}
                   tabIndex={-1}
                   key={row.id}
-                  selected={isItemSelected}
+                  // selected={isItemSelected}
                   sx={{ cursor: "pointer" }}
                 >
                   <TableCell padding="checkbox">
                     <Checkbox
                       color="primary"
-                      checked={isItemSelected}
+                      // checked={isItemSelected}
                       inputProps={{
                         "aria-labelledby": labelId,
                       }}
@@ -351,16 +368,46 @@ export default function StaffTable() {
                     scope="row"
                     padding="none"
                   >
-                    {row.name}
+                    {row.userName}
                   </TableCell>
-                  <TableCell align="left">{row.calories}</TableCell>
-                  <TableCell align="left">{row.fat}</TableCell>
-                  <TableCell align="left">{row.carbs}</TableCell>
-                  <TableCell align="left">{row.protein}</TableCell>
+                  <TableCell align="left">{row.userEmail}</TableCell>
+                  <TableCell align="left">{row.userRole}</TableCell>
+                  <TableCell align="left">
+                    <Box
+                      display="flex"
+                      justifyContent="left"
+                      alignItems="center"
+                      flexDirection="row"
+                    >
+                      {row.userDepartment?.map((b) => (
+                        <Typography sx={{ padding: 1 }}>
+                          {b?.branchName}
+                        </Typography>
+                      ))}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="left">
+                    {" "}
+                    <Box
+                      display="flex"
+                      justifyContent="left"
+                      alignItems="center"
+                      flexDirection="row"
+                    >
+                      {row.userAssignSubject?.map((b) => (
+                        <Typography sx={{ padding: 1 }}>
+                          {b?.subjectName}
+                        </Typography>
+                      ))}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="left">
+                    {row.active ? "Active" : "In-active"}
+                  </TableCell>
                 </TableRow>
               );
             })}
-            {emptyRows > 0 && (
+            {/* {emptyRows > 0 && (
               <TableRow
                 style={{
                   height: (dense ? 33 : 53) * emptyRows,
@@ -368,11 +415,11 @@ export default function StaffTable() {
               >
                 <TableCell colSpan={6} />
               </TableRow>
-            )}
+            )} */}
           </TableBody>
         </Table>
       </TableContainer>
-      <TablePagination
+      {/* <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
         count={rows.length}
@@ -385,7 +432,7 @@ export default function StaffTable() {
       <FormControlLabel
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label="Dense padding"
-      />
+      /> */}
     </Box>
   );
 }

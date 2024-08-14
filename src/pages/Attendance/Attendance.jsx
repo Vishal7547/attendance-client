@@ -35,27 +35,27 @@ const Attendance = () => {
             <Typography>70% IN 80DAYS</Typography>
           </Item>
           <Item>
-            <Typography>ECE</Typography>
+            <Typography>CSE</Typography>
             <Typography>70% IN 80DAYS</Typography>
           </Item>
           <Item>
-            <Typography>ECE</Typography>
+            <Typography>MECH</Typography>
             <Typography>70% IN 80DAYS</Typography>
           </Item>
           <Item>
-            <Typography>ECE</Typography>
+            <Typography>EEE</Typography>
             <Typography>70% IN 80DAYS</Typography>
           </Item>
           <Item>
-            <Typography>ECE</Typography>
+            <Typography>EE</Typography>
             <Typography>70% IN 80DAYS</Typography>
           </Item>
           <Item>
-            <Typography>ECE</Typography>
+            <Typography>AI</Typography>
             <Typography>70% IN 80DAYS</Typography>
           </Item>
           <Item>
-            <Typography>ECE</Typography>
+            <Typography>IT</Typography>
             <Typography>70% IN 80DAYS</Typography>
           </Item>
         </Stack>

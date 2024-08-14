@@ -8,8 +8,9 @@ import {
   Grid,
   Button,
   Chip,
+  Alert,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Divider from "@mui/material/Divider";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import InputLabel from "@mui/material/InputLabel";
@@ -20,7 +21,223 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import TurnedInNotIcon from "@mui/icons-material/TurnedInNot";
 import { IconButton } from "@mui/material";
 import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
+import FormHelperText from "@mui/material/FormHelperText";
+import { useUser } from "../../context/UserProvider";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 const StudentReg = ({ nextHandler, current, backHandler }) => {
+  const {
+    user,
+    semester: sem,
+    session: ses,
+    branch: bra,
+    setStudentTableUpdate,
+    studentTableUpdate,
+  } = useUser();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [reg, setReg] = useState("");
+  const [name, setName] = useState("");
+  const [semester, setSemester] = useState("");
+  const [session, setSesssion] = useState("");
+  const [branch, setBranch] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState({
+    email: "",
+    password: "",
+    backendError: "",
+    phone: "",
+    reg: "",
+    name: "",
+    semester: "",
+    session: "",
+    branch: "",
+  });
+  const [isError, setIsError] = useState({
+    email: false,
+    password: false,
+    backendError: false,
+    phone: false,
+    reg: false,
+    name: false,
+    semester: false,
+    session: false,
+    branch: false,
+  });
+  useEffect(() => {
+    const timeClear = setTimeout(() => {
+      setIsError((prev) => ({ ...prev, backendError: false }));
+    }, 2000);
+    return () => {
+      clearTimeout(timeClear);
+    };
+  }, [isError?.backendError]);
+  const handleClear = () => {
+    setError({
+      email: "",
+      password: "",
+      backendError: "",
+      phone: "",
+      reg: "",
+      name: "",
+      semester: "",
+      session: "",
+      branch: "",
+    });
+
+    setIsError({
+      email: false,
+      password: false,
+      backendError: false,
+      phone: false,
+      reg: false,
+      name: false,
+      semester: false,
+      session: false,
+      branch: false,
+    });
+  };
+
+  const handlePersonal = () => {
+    try {
+      if (!name) {
+        setError((prev) => ({ ...prev, name: "name is missing" }));
+        setIsError((prev) => ({ ...prev, name: true }));
+        return;
+      } else {
+        setError((prev) => ({ ...prev, name: "" }));
+        setIsError((prev) => ({ ...prev, name: false }));
+      }
+      if (!email) {
+        setError((prev) => ({ ...prev, email: "email is missing" }));
+        setIsError((prev) => ({ ...prev, email: true }));
+        return;
+      } else {
+        setError((prev) => ({ ...prev, email: "" }));
+        setIsError((prev) => ({ ...prev, email: false }));
+      }
+      if (!phone) {
+        setError((prev) => ({ ...prev, phone: "phone is missing" }));
+        setIsError((prev) => ({ ...prev, phone: true }));
+        return;
+      } else {
+        setError((prev) => ({ ...prev, phone: "" }));
+        setIsError((prev) => ({ ...prev, phone: false }));
+      }
+      if (!password) {
+        setError((prev) => ({ ...prev, password: "Password is missing" }));
+        setIsError((prev) => ({ ...prev, password: true }));
+        return;
+      } else {
+        setError((prev) => ({ ...prev, password: "" }));
+        setIsError((prev) => ({ ...prev, password: false }));
+      }
+      console.log("checking");
+      nextHandler();
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
+  const handleCollegeInfo = () => {
+    try {
+      if (!reg) {
+        setError((prev) => ({ ...prev, reg: "reg is missing" }));
+        setIsError((prev) => ({ ...prev, reg: true }));
+        return;
+      } else {
+        if (reg.length >= 12 || reg.length <= 10) {
+          setError((prev) => ({
+            ...prev,
+            reg: "reg number should be 11 digits",
+          }));
+          setIsError((prev) => ({ ...prev, reg: true }));
+          return;
+        }
+        setError((prev) => ({ ...prev, reg: "" }));
+        setIsError((prev) => ({ ...prev, reg: false }));
+      }
+      if (!session) {
+        setError((prev) => ({ ...prev, session: "session is missing" }));
+        setIsError((prev) => ({ ...prev, session: true }));
+
+        return;
+      } else {
+        setError((prev) => ({ ...prev, session: "" }));
+        setIsError((prev) => ({ ...prev, session: false }));
+      }
+      if (!semester) {
+        setError((prev) => ({ ...prev, semester: "semester is missing" }));
+        setIsError((prev) => ({ ...prev, semester: true }));
+        return;
+      } else {
+        setError((prev) => ({ ...prev, semester: "" }));
+        setIsError((prev) => ({ ...prev, semester: false }));
+      }
+      if (!branch) {
+        setError((prev) => ({ ...prev, branch: "branch is missing" }));
+        setIsError((prev) => ({ ...prev, branch: true }));
+        return;
+      } else {
+        setError((prev) => ({ ...prev, branch: "" }));
+        setIsError((prev) => ({ ...prev, branch: false }));
+      }
+      console.log("working");
+      nextHandler();
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/user`,
+        {
+          userEmail: email,
+          userName: name,
+          userPhone: phone,
+          userRegNo: reg,
+          userSession: session,
+          userSemester: semester,
+          userBranch: branch,
+          password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (data.success) {
+        // console.log(data);
+
+        setStudentTableUpdate(!studentTableUpdate);
+        setLoading(false);
+        navigate("/student");
+      } else {
+        console.log(data.message);
+        setIsError((prev) => ({ ...prev, backendError: true }));
+        setError((prev) => ({
+          ...prev,
+          backendError: data?.message,
+        }));
+        setLoading(false);
+      }
+      // handleClear();
+    } catch (e) {
+      setIsError((prev) => ({ ...prev, backendError: true }));
+      setError((prev) => ({
+        ...prev,
+        backendError: e.response?.data?.message || "An error occurred",
+      }));
+      console.log(e.message);
+      setLoading(false);
+    }
+  };
+
   return (
     <Layout>
       {" "}
@@ -32,7 +249,7 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
           }}
         >
           {current === 0 && (
-            <Card sx={{ width: 520, padding: "20px" }}>
+            <Card sx={{ width: 520, padding: "10px" }}>
               <Box sx={{ flexGrow: "1" }}>
                 <Typography align="center" variant="h5">
                   <Divider>
@@ -51,6 +268,10 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
                       label="Name"
                       size="large"
                       variant="standard"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      error={isError.name}
+                      helperText={error?.name}
                       fullWidth
                     />
                   </Grid>
@@ -62,6 +283,25 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
                       label="Email"
                       variant="standard"
                       size="large"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      error={isError.email}
+                      helperText={error?.email}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      id="standard-basic"
+                      type="number"
+                      required
+                      label="phone"
+                      size="large"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      error={isError.phone}
+                      helperText={error?.phone}
+                      variant="standard"
                       fullWidth
                     />
                   </Grid>
@@ -72,6 +312,10 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
                       required
                       label="Password"
                       size="large"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      error={isError.password}
+                      helperText={error?.password}
                       variant="standard"
                       fullWidth
                     />
@@ -80,7 +324,8 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
                     <Button
                       variant="contained"
                       endIcon={<NavigateNextIcon />}
-                      onClick={nextHandler}
+                      type="button"
+                      onClick={handlePersonal}
                     >
                       Next
                     </Button>
@@ -110,6 +355,10 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
                       label="Reg"
                       size="large"
                       variant="standard"
+                      value={reg}
+                      onChange={(e) => setReg(e.target.value)}
+                      error={isError.reg}
+                      helperText={error?.reg}
                       fullWidth
                     />
                   </Grid>
@@ -122,25 +371,57 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
                     >
                       <FormControl variant="standard" sx={{ minWidth: 120 }}>
                         <InputLabel id="demo-simple-select-standard-label">
+                          Session
+                        </InputLabel>
+                        <Select
+                          labelId="demo-simple-select-standard-label"
+                          id="demo-simple-select-standard"
+                          label="Branch"
+                          value={session}
+                          onChange={(e) => setSesssion(e.target.value)}
+                          error={isError.session}
+                        >
+                          {ses?.map((s) => (
+                            <MenuItem key={s?._id} value={s?._id}>
+                              {s?.sessionName}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        <FormHelperText
+                          sx={{
+                            color: "red",
+                          }}
+                        >
+                          {error?.session}
+                        </FormHelperText>
+                      </FormControl>
+
+                      <FormControl variant="standard" sx={{ minWidth: 120 }}>
+                        <InputLabel id="demo-simple-select-standard-label">
                           Semester
                         </InputLabel>
                         <Select
                           labelId="demo-simple-select-standard-label"
                           id="demo-simple-select-standard"
                           label="Semester"
+                          value={semester}
+                          onChange={(e) => setSemester(e.target.value)}
+                          error={isError.semester}
+                          helperText={error?.semester}
                         >
-                          <MenuItem value="">
-                            <em>None</em>
-                          </MenuItem>
-                          <MenuItem value={10}>1</MenuItem>
-                          <MenuItem value={20}>2</MenuItem>
-                          <MenuItem value={30}>3</MenuItem>
-                          <MenuItem value={10}>4</MenuItem>
-                          <MenuItem value={20}>5</MenuItem>
-                          <MenuItem value={30}>6</MenuItem>
-                          <MenuItem value={20}>7</MenuItem>
-                          <MenuItem value={30}>8</MenuItem>
+                          {sem?.map((s) => (
+                            <MenuItem key={s?._id} value={s?._id}>
+                              {s?.semesterName}
+                            </MenuItem>
+                          ))}
                         </Select>
+                        <FormHelperText
+                          sx={{
+                            color: "red",
+                          }}
+                        >
+                          {error?.semester}
+                        </FormHelperText>
                       </FormControl>
                       <FormControl variant="standard" sx={{ minWidth: 120 }}>
                         <InputLabel id="demo-simple-select-standard-label">
@@ -150,18 +431,24 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
                           labelId="demo-simple-select-standard-label"
                           id="demo-simple-select-standard"
                           label="Branch"
+                          value={branch}
+                          onChange={(e) => setBranch(e.target.value)}
+                          error={isError.branch}
+                          helperText={error?.branch}
                         >
-                          <MenuItem value="">
-                            <em>None</em>
-                          </MenuItem>
-                          <MenuItem value={10}>ECE</MenuItem>
-                          <MenuItem value={20}>EE</MenuItem>
-                          <MenuItem value={30}>EEE</MenuItem>
-                          <MenuItem value={10}>CIVIL</MenuItem>
-                          <MenuItem value={20}>CSE</MenuItem>
-                          <MenuItem value={30}>AI</MenuItem>
-                          <MenuItem value={20}>MECH</MenuItem>
+                          {bra?.map((s) => (
+                            <MenuItem key={s?._id} value={s?._id}>
+                              {s?.branchName}
+                            </MenuItem>
+                          ))}
                         </Select>
+                        <FormHelperText
+                          sx={{
+                            color: "red",
+                          }}
+                        >
+                          {error?.branch}
+                        </FormHelperText>
                       </FormControl>
                     </Box>
                   </Grid>
@@ -183,7 +470,7 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
                       <Button
                         variant="contained"
                         endIcon={<NavigateNextIcon />}
-                        onClick={nextHandler}
+                        onClick={handleCollegeInfo}
                       >
                         Next
                       </Button>
@@ -233,8 +520,13 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
                       >
                         Back
                       </Button>
-                      <Button variant="contained" endIcon={<TurnedInNotIcon />}>
-                        Submit
+                      <Button
+                        variant="contained"
+                        endIcon={<TurnedInNotIcon />}
+                        type="button"
+                        onClick={handleSubmit}
+                      >
+                        {loading ? "Loading..." : "Submit"}
                       </Button>
                     </Box>
                   </Grid>
@@ -243,6 +535,21 @@ const StudentReg = ({ nextHandler, current, backHandler }) => {
             </Card>
           )}
         </Box>
+        {isError?.backendError && (
+          <Alert
+            variant="filled"
+            severity="error"
+            sx={{
+              position: "fixed",
+              top: 30,
+              left: 0,
+              zIndex: 9999,
+              margin: 1,
+            }}
+          >
+            {error?.backendError}
+          </Alert>
+        )}
       </Container>
     </Layout>
   );

@@ -13,8 +13,11 @@ import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
 import UserTable from "../../components/user/UserTable";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../../context/UserProvider";
 const Students = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
+  console.log(user);
   return (
     <Layout>
       <Container>

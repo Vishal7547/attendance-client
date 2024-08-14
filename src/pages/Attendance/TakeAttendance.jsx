@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Layout from "../../components/layout/Layout";
 import { Container, Typography, Card, Grid, Box } from "@mui/material";
 
@@ -8,7 +8,12 @@ import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
 import LeaveTable from "../../leave/LeaveTable";
 import TakeAttendanceTable from "../../components/Attendance/TakeAttendanceTable";
+import { useAttendance } from "../../context/AttendanceProvider";
 const TakeAttendance = () => {
+  const { attendanceStudent, attendanceStudents } = useAttendance();
+  useEffect(() => {
+    attendanceStudent();
+  }, []);
   return (
     <Layout>
       <Container>
@@ -47,7 +52,13 @@ const TakeAttendance = () => {
               </Grid>
             </Box>
           </Box>
-
+          <Box>
+            {" "}
+            <Typography variant="h5">
+              Attendance of {attendanceStudents?.subject?.subjectName} : AT{" "}
+              {new Date().toDateString()} : {new Date().toLocaleTimeString()}
+            </Typography>
+          </Box>
           <TakeAttendanceTable />
         </Card>
       </Container>
