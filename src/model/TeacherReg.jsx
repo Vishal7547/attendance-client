@@ -113,7 +113,7 @@ const TeacherReg = ({ open, handleClose }) => {
     };
   }, [isError?.success]);
   const handleSubmit = async () => {
-    console.log(name, email, password, role, subject, branch);
+    // console.log(name, email, password, role, subject, branch);
     if (!email) {
       setError((prev) => ({ ...prev, email: "email is missing" }));
       setIsError((prev) => ({ ...prev, email: true }));

@@ -8,8 +8,9 @@ const AttendanceProvider = ({ children }) => {
   const [attendanceStudents, setAttendanceStudents] = useState({
     subject: null,
     students: [],
+    id: null,
   });
-
+  const [attendanceUpdate, setAttendanceUpdate] = useState(false);
   const attendanceStudent = async () => {
     try {
       const { data } = await axios.get(
@@ -26,6 +27,7 @@ const AttendanceProvider = ({ children }) => {
           ...prev,
           subject: data?.subject,
           students: data?.attendanceStudents,
+          id: data?.id,
         }));
       }
     } catch (e) {
@@ -35,7 +37,14 @@ const AttendanceProvider = ({ children }) => {
 
   return (
     <attendanceContext.Provider
-      value={{ attendanceStudents, setAttendanceStudents, attendanceStudent }}
+      value={{
+        attendanceStudents,
+
+        setAttendanceStudents,
+        attendanceStudent,
+        attendanceUpdate,
+        setAttendanceUpdate,
+      }}
     >
       {children}
     </attendanceContext.Provider>

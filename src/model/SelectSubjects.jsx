@@ -30,7 +30,7 @@ const style = {
 };
 
 const SelectSubjects = ({ open, handleClose }) => {
-  const { user, session, semester } = useUser();
+  const { user, session, semester, userDetails, setUserDetails } = useUser();
   const { setAttendanceStudents } = useAttendance();
   const [selectSubject, setSelectSubject] = useState([]);
   const [sessionRecord, setSessionRecord] = useState("");
@@ -38,7 +38,7 @@ const SelectSubjects = ({ open, handleClose }) => {
   const [branch, setBranch] = useState("");
   const [subject, setSubject] = useState("");
   const [loading, setLoading] = useState(false);
-
+  console.log(userDetails);
   const [error, setError] = useState({
     sessionRecord: "",
     semesterRecord: "",
@@ -64,9 +64,7 @@ const SelectSubjects = ({ open, handleClose }) => {
     };
   }, [isError?.backendError]);
   useEffect(() => {
-    const filtered = user?.userAssignSubject.filter(
-      (s) => s?.branch === branch
-    );
+    const filtered = userDetails?.sub.filter((s) => s?.branch === branch);
 
     setSelectSubject(filtered);
   }, [branch]);
@@ -257,7 +255,7 @@ const SelectSubjects = ({ open, handleClose }) => {
                     onChange={(e) => setBranch(e.target.value)}
                     error={isError.branch}
                   >
-                    {user?.userDepartment?.map((s) => (
+                    {userDetails?.dep?.map((s) => (
                       <MenuItem value={s?._id} key={s?._id}>
                         {s?.branchName}
                       </MenuItem>

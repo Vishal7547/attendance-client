@@ -6,6 +6,11 @@ export const useUser = () => {
 };
 const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [userDetails, setUserDetails] = useState({
+    dep: [],
+    sub: [],
+  });
+
   const [semester, setSemester] = useState([]);
   const [session, setSession] = useState([]);
   const [branch, setBranch] = useState([]);
@@ -28,6 +33,11 @@ const UserProvider = ({ children }) => {
         );
         if (data.success) {
           setUser(data?.user);
+          setUserDetails((pre) => ({
+            ...pre,
+            dep: data?.user?.userDepartment,
+            sub: data?.user?.userAssignSubject,
+          }));
         }
       } catch (e) {
         console.log(e);
@@ -174,6 +184,8 @@ const UserProvider = ({ children }) => {
         studentTableUpdate,
         setStudentTableUpdate,
         teacher,
+        userDetails,
+        setUserDetails,
       }}
     >
       {children}

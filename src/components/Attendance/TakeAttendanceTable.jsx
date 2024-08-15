@@ -26,16 +26,22 @@ import { useAttendance } from "../../context/AttendanceProvider";
 import Chip from "@mui/material/Chip";
 import { Alert, Button } from "@mui/material";
 import axios from "axios";
+import TakeAttendance from "../../confirm/TakeAttendance";
+import useModelHooks from "../../customHooks/useModel";
 
 export default function TakeAttendanceTable() {
-  const { attendanceStudents } = useAttendance();
-  console.log(attendanceStudents);
+  const {
+    attendanceStudents,
+    attendanceUpdate,
+    setAttendanceUpdate,
+    setAttendanceStudents,
+  } = useAttendance();
+  const { open, handleOpen, handleClose } = useModelHooks();
   const navigate = useNavigate();
   const [attendance, setAttendance] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState({
     backendError: "",
-
     success: "",
   });
   const [isError, setIsError] = React.useState({
@@ -43,7 +49,6 @@ export default function TakeAttendanceTable() {
 
     success: false,
   });
-  console.log(attendanceStudents);
   React.useEffect(() => {
     const timeClear = setTimeout(() => {
       setIsError((prev) => ({ ...prev, backendError: false }));
@@ -61,14 +66,7 @@ export default function TakeAttendanceTable() {
     };
   }, [isError?.success]);
   React.useEffect(() => {
-    const attendanceInfo = attendanceStudents?.students?.map((s) => {
-      return {
-        ...s,
-        status: "present",
-        subject: attendanceStudents?.subject?._id,
-      };
-    });
-    setAttendance(attendanceInfo);
+    setAttendance(attendanceStudents?.students);
   }, [attendanceStudents]);
   const handleToggle = (id) => {
     const info = attendance?.map((a) => {
@@ -82,18 +80,19 @@ export default function TakeAttendanceTable() {
 
   const handleAttendance = async () => {
     // console.log(attendance);
-    //     const currentAttendance=attendance?.map((a)=>{
-    // return {}
-    //     })
+    const currentAttendance = attendance?.map((a) => {
+      return {
+        student: a?._id,
+        status: a?.status,
+      };
+    });
+    console.log(currentAttendance);
     try {
       setLoading(true);
       const { data } = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/attendance`,
         {
-          session: "sessionRecord",
-          // semester: semesterRecord,
-          // branch: branch,
-          // subject: subject,
+          currentAttendance,
         },
         {
           headers: {
@@ -106,10 +105,17 @@ export default function TakeAttendanceTable() {
         console.log(data);
         // setAttendanceStudents(data?.attendanceStudents);
         setLoading(false);
+        // setAttendanceUpdate(!attendanceUpdate);
+        setAttendanceStudents((prev) => ({
+          ...prev,
+          subject: data?.subject,
+          students: data?.attendanceStudents,
+          id: data?.id,
+        }));
         setIsError((prev) => ({ ...prev, success: true }));
         setError((prev) => ({
           ...prev,
-          backendError: "Attendance Recorded Successfully",
+          success: "Attendance Recorded Successfully",
         }));
       } else {
         console.log(data.message);
@@ -120,8 +126,74 @@ export default function TakeAttendanceTable() {
         }));
         setLoading(false);
       }
-      // handleClear();
     } catch (e) {
+      console.log(e);
+      setIsError((prev) => ({ ...prev, backendError: true }));
+      setError((prev) => ({
+        ...prev,
+        backendError: e.response?.data?.message || "An error occurred",
+      }));
+      console.log(e.message);
+      setLoading(false);
+    }
+  };
+  const message = {
+    heading: "Confirm Attendance Submission",
+    subHeading:
+      "Are you sure you want to submit the attendance for the selected students?",
+    type: "submit_Take_Attendance",
+  };
+
+  const updateAttendance = async () => {
+    // console.log(attendance);
+    const currentAttendance = attendance?.map((a) => {
+      return {
+        student: a?._id,
+        status: a?.status,
+      };
+    });
+    console.log(currentAttendance);
+    try {
+      setLoading(true);
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_BACKEND_URL}/attendance/${attendanceStudents?.id}`,
+        {
+          currentAttendance,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      if (data.success) {
+        console.log(data);
+        // setAttendanceStudents(data?.attendanceStudents);
+        setLoading(false);
+        // setAttendanceUpdate(!attendanceUpdate);
+        setAttendanceStudents((prev) => ({
+          ...prev,
+          subject: data?.subject,
+          students: data?.attendanceStudents,
+          id: data?.id,
+        }));
+        setIsError((prev) => ({ ...prev, success: true }));
+        setError((prev) => ({
+          ...prev,
+          success: "Attendance Updated Successfully",
+        }));
+      } else {
+        console.log(data.message);
+        setIsError((prev) => ({ ...prev, backendError: true }));
+        setError((prev) => ({
+          ...prev,
+          backendError: data?.message,
+        }));
+        setLoading(false);
+      }
+    } catch (e) {
+      console.log(e);
       setIsError((prev) => ({ ...prev, backendError: true }));
       setError((prev) => ({
         ...prev,
@@ -135,9 +207,19 @@ export default function TakeAttendanceTable() {
     <>
       <Box sx={{ width: "100%" }}>
         <Box>
-          <Button variant="contained" sx={{ p: 1 }} onClick={handleAttendance}>
-            {loading ? "Loading..." : "  LOCK ATTENDANCE"}
-          </Button>
+          {attendanceStudents?.id ? (
+            <Button
+              variant="contained"
+              sx={{ p: 1 }}
+              onClick={updateAttendance}
+            >
+              {loading ? "Loading..." : " UPDATE ATTENDANCE"}
+            </Button>
+          ) : (
+            <Button variant="contained" sx={{ p: 1 }} onClick={handleOpen}>
+              {loading ? "Loading..." : "  LOCK ATTENDANCE"}
+            </Button>
+          )}
         </Box>
         <TableContainer>
           <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
@@ -207,6 +289,12 @@ export default function TakeAttendanceTable() {
           {error?.success}
         </Alert>
       )}
+      <TakeAttendance
+        handleClose={handleClose}
+        open={open}
+        message={message}
+        handleAttendance={handleAttendance}
+      />
     </>
   );
 }
