@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import { Grid, Button, Chip } from "@mui/material";
+import { Grid, Button, Chip, FormHelperText } from "@mui/material";
 import Divider from "@mui/material/Divider";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -10,6 +10,7 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserProvider";
 
 const style = {
   position: "absolute",
@@ -24,12 +25,53 @@ const style = {
   p: 4,
 };
 
-const SelectAttendanceType = ({ open, handleClose }) => {
+const SelectAttendanceType = ({ open, handleClose, userInfo }) => {
   const navigate = useNavigate();
-
+  const { subject: sub } = useUser();
+  const [type, setType] = useState("");
+  const [subject, setSubject] = useState("");
+  const [listBranch, setListBranch] = useState(null);
+  const [error, setError] = useState({
+    type: "",
+    subject: "",
+  });
+  const [isError, setIsError] = useState({
+    type: false,
+    subject: false,
+  });
+  useEffect(() => {
+    const filterSubject = sub.filter((s) => {
+      return (
+        s?.branch === userInfo?.userBranch?._id &&
+        s?.semester === userInfo?.userSemester?._id
+      );
+    });
+    setListBranch(filterSubject);
+    // console.log(filterSubject);
+  }, [userInfo]);
   const handleNext = () => {
+    if (!type) {
+      setError((prev) => ({ ...prev, type: "type is missing" }));
+      setIsError((prev) => ({ ...prev, type: true }));
+      return;
+    } else {
+      setError((prev) => ({ ...prev, type: "" }));
+      setIsError((prev) => ({ ...prev, type: false }));
+    }
+
+    if (!subject) {
+      setError((prev) => ({ ...prev, subject: "subject is missing" }));
+      setIsError((prev) => ({ ...prev, subject: true }));
+      return;
+    } else {
+      setError((prev) => ({ ...prev, subject: "" }));
+      setIsError((prev) => ({ ...prev, subject: false }));
+    }
     handleClose();
-    navigate("/student-individual-attendance");
+    if (type === "2") {
+      navigate(`/student-individual-attendance/${userInfo?._id}/${subject}`);
+    } else {
+    }
   };
 
   return (
@@ -60,13 +102,20 @@ const SelectAttendanceType = ({ open, handleClose }) => {
                     labelId="demo-simple-select-standard-label"
                     id="demo-simple-select-standard"
                     label="  Attendance Type"
+                    value={type}
+                    error={isError.type}
+                    onChange={(e) => setType(e.target.value)}
                   >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    <MenuItem value={10}>Analysis</MenuItem>
-                    <MenuItem value={20}>Row Form</MenuItem>
+                    <MenuItem value="1">Analysis</MenuItem>
+                    <MenuItem value="2">Row Form</MenuItem>
                   </Select>
+                  <FormHelperText
+                    sx={{
+                      color: "red",
+                    }}
+                  >
+                    {error?.type}
+                  </FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
@@ -78,15 +127,23 @@ const SelectAttendanceType = ({ open, handleClose }) => {
                     labelId="demo-simple-select-standard-label"
                     id="demo-simple-select-standard"
                     label="Subject"
+                    value={subject}
+                    error={isError.subject}
+                    onChange={(e) => setSubject(e.target.value)}
                   >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    <MenuItem value={10}>VLSI</MenuItem>
-                    <MenuItem value={20}>IOT</MenuItem>
-                    <MenuItem value={10}>MEMS</MenuItem>
-                    <MenuItem value={20}>WC</MenuItem>
+                    {listBranch?.map((s) => (
+                      <MenuItem value={s?._id} key={s?._id}>
+                        {s?.subjectName}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  <FormHelperText
+                    sx={{
+                      color: "red",
+                    }}
+                  >
+                    {error?.subject}
+                  </FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12}>

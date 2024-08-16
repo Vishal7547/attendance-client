@@ -318,7 +318,11 @@ export default function UserTable() {
       ),
     [order, orderBy, page, rowsPerPage]
   );
-
+  const [userInfo, setUserInfo] = React.useState();
+  const handleUser = (row) => {
+    setUserInfo(row);
+    handleOpen();
+  };
   return (
     <Box sx={{ width: "100%" }}>
       <EnhancedTableToolbar numSelected={selected.length} />
@@ -390,7 +394,7 @@ export default function UserTable() {
                       }
                     />
                   </TableCell>
-                  <TableCell align="left" onClick={handleOpen}>
+                  <TableCell align="left" onClick={() => handleUser(row)}>
                     View
                   </TableCell>
                 </TableRow>
@@ -422,7 +426,11 @@ export default function UserTable() {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label="Dense padding"
       /> */}
-      <SelectAttendanceType open={open} handleClose={handleClose} />
+      <SelectAttendanceType
+        open={open}
+        handleClose={handleClose}
+        userInfo={userInfo}
+      />
     </Box>
   );
 }

@@ -21,6 +21,7 @@ import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
+import Chip from "@mui/material/Chip";
 import { useNavigate } from "react-router-dom";
 
 function createData(id, name, calories, fat, carbs, protein, Attendance) {
@@ -216,7 +217,7 @@ EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 
-export default function IndividualAttendanceTable() {
+export default function IndividualAttendanceTable({ attendance }) {
   const navigate = useNavigate();
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
@@ -286,10 +287,25 @@ export default function IndividualAttendanceTable() {
       ),
     [order, orderBy, page, rowsPerPage]
   );
-
+  const calculateAtt = () => {
+    const att = attendance?.filter((a) => a.status === "present");
+    return att.length;
+  };
   return (
     <Box sx={{ width: "100%" }}>
       <EnhancedTableToolbar numSelected={selected.length} />
+      <Box
+        sx={{
+          textTransform: "capitalize",
+        }}
+      >
+        <b> {attendance[0]?.name}</b>, with registration number{" "}
+        <b>{attendance[0]?.regNo}</b> and email <b>{attendance[0]?.email}</b>,
+        attended <b>{calculateAtt()}</b> days out of a total of{" "}
+        <b> {attendance.length}</b> days and was absent for{" "}
+        <b> {attendance.length - calculateAtt()}</b> days. His attendance
+        percentage is <b>{(calculateAtt() / attendance.length) * 100}</b>%
+      </Box>
       <TableContainer>
         <Table
           sx={{ minWidth: 750 }}
@@ -305,8 +321,8 @@ export default function IndividualAttendanceTable() {
             rowCount={rows.length}
           />
           <TableBody>
-            {visibleRows.map((row, index) => {
-              const isItemSelected = isSelected(row.id);
+            {attendance.map((row, index) => {
+              // const isItemSelected = isSelected(row.id);
               const labelId = `enhanced-table-checkbox-${index}`;
 
               return (
@@ -314,16 +330,16 @@ export default function IndividualAttendanceTable() {
                   hover
                   onClick={(event) => handleClick(event, row.id)}
                   role="checkbox"
-                  aria-checked={isItemSelected}
+                  // aria-checked={isItemSelected}
                   tabIndex={-1}
                   key={row.id}
-                  selected={isItemSelected}
+                  // selected={isItemSelected}
                   sx={{ cursor: "pointer" }}
                 >
                   <TableCell padding="checkbox">
                     <Checkbox
                       color="primary"
-                      checked={isItemSelected}
+                      // checked={isItemSelected}
                       inputProps={{
                         "aria-labelledby": labelId,
                       }}
@@ -335,9 +351,15 @@ export default function IndividualAttendanceTable() {
                     scope="row"
                     padding="none"
                   >
-                    12/09/24
+                    {row?.date}
                   </TableCell>
-                  <TableCell>P</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={row?.status}
+                      variant="contained"
+                      color={row?.status === "present" ? "success" : "error"}
+                    />
+                  </TableCell>
                 </TableRow>
               );
             })}

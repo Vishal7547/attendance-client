@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Layout from "../../components/layout/Layout";
 import { Typography, Card, Grid, Box, Button } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
@@ -13,7 +13,15 @@ import SearchIcon from "@mui/icons-material/Search";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import IndividualAttendanceTable from "../../components/Attendance/IndividualAttendanceTable";
+import { useParams } from "react-router-dom";
+import { useAttendance } from "../../context/AttendanceProvider";
 const IndividualAttendance = () => {
+  const { userId, subjectId } = useParams();
+  const { fetchIndividualAttendance, attendance } = useAttendance();
+  // console.log(userId, subjectId);
+  useEffect(() => {
+    fetchIndividualAttendance(userId, subjectId);
+  }, [userId, subjectId]);
   return (
     <Layout>
       <Card sx={{ padding: "10px", marginTop: "20px" }}>
@@ -82,7 +90,7 @@ const IndividualAttendance = () => {
           </Box>
         </Box>
 
-        <IndividualAttendanceTable />
+        <IndividualAttendanceTable attendance={attendance} />
       </Card>
     </Layout>
   );

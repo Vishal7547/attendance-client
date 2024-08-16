@@ -10,6 +10,9 @@ const AttendanceProvider = ({ children }) => {
     students: [],
     id: null,
   });
+  const [attendance, setAttendance] = useState([]);
+  const [branchAttendance, setBranchAttendance] = useState([]);
+
   const [attendanceUpdate, setAttendanceUpdate] = useState(false);
   const attendanceStudent = async () => {
     try {
@@ -34,16 +37,56 @@ const AttendanceProvider = ({ children }) => {
       console.log(e);
     }
   };
+  const fetchIndividualAttendance = async (userId, subjectId) => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/attendance/${userId}/${subjectId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      if (data.success) {
+        setAttendance(data?.attendance);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
+  const fetchBranchWiseAttendance = async (semester, bro, session) => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/attendance/${semester}/${bro}/${session}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      if (data.success) {
+        setBranchAttendance(data?.attendance);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
   return (
     <attendanceContext.Provider
       value={{
         attendanceStudents,
-
+        fetchIndividualAttendance,
         setAttendanceStudents,
         attendanceStudent,
         attendanceUpdate,
         setAttendanceUpdate,
+        attendance,
+        setAttendance,
+        fetchBranchWiseAttendance,
+        branchAttendance,
       }}
     >
       {children}

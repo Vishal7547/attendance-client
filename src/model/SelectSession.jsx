@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import { TextField, Grid, Button, Chip } from "@mui/material";
+import { TextField, Grid, Button, Chip, FormHelperText } from "@mui/material";
 import Divider from "@mui/material/Divider";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -12,6 +12,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import ListItemText from "@mui/material/ListItemText";
 import Checkbox from "@mui/material/Checkbox";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserProvider";
 
 const style = {
   position: "absolute",
@@ -28,9 +29,40 @@ const style = {
 
 const SelectSession = ({ open, handleClose }) => {
   const navigate = useNavigate();
+  const { session: ses, semester: sem, branch } = useUser();
+  const [session, setSession] = useState("");
+  const [semester, setSemester] = useState("");
+  const [listBranch, setListBranch] = useState(null);
+  const [error, setError] = useState({
+    session: "",
+    semester: "",
+  });
+  const [isError, setIsError] = useState({
+    session: false,
+    semester: false,
+  });
   const handleNext = () => {
+    if (!session) {
+      setError((prev) => ({ ...prev, session: "session is missing" }));
+      setIsError((prev) => ({ ...prev, session: true }));
+      return;
+    } else {
+      setError((prev) => ({ ...prev, session: "" }));
+      setIsError((prev) => ({ ...prev, session: false }));
+    }
+    if (!semester) {
+      setError((prev) => ({ ...prev, semester: "semester is missing" }));
+      setIsError((prev) => ({ ...prev, semester: true }));
+      return;
+    } else {
+      setError((prev) => ({ ...prev, semester: "" }));
+      setIsError((prev) => ({ ...prev, semester: false }));
+    }
     handleClose();
-    navigate("/student-attendance/3457fh");
+    const branch_id = branch?.find((b) => b?.branchName === "ECE");
+    if (branch_id) {
+      navigate(`/student-attendance/${semester}/${branch_id?._id}/${session}`);
+    }
   };
   return (
     <Modal
@@ -59,16 +91,23 @@ const SelectSession = ({ open, handleClose }) => {
                   labelId="demo-simple-select-standard-label"
                   id="demo-simple-select-standard"
                   label="Session"
+                  value={session}
+                  error={isError.session}
+                  onChange={(e) => setSession(e.target.value)}
                 >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value={10}>2020-2024</MenuItem>
-                  <MenuItem value={20}>2021-2025</MenuItem>
-                  <MenuItem value={30}>2022-2026</MenuItem>
-                  <MenuItem value={10}>2023-2027</MenuItem>
-                  <MenuItem value={20}>2024-2028</MenuItem>
+                  {ses?.map((s) => (
+                    <MenuItem value={s?._id} key={s?._id}>
+                      {s?.sessionName}
+                    </MenuItem>
+                  ))}
                 </Select>
+                <FormHelperText
+                  sx={{
+                    color: "red",
+                  }}
+                >
+                  {error?.session}
+                </FormHelperText>
               </FormControl>
             </Grid>
             <Grid item xs={12}>
@@ -80,19 +119,23 @@ const SelectSession = ({ open, handleClose }) => {
                   labelId="demo-simple-select-standard-label"
                   id="demo-simple-select-standard"
                   label="Sem"
+                  value={semester}
+                  error={isError.semester}
+                  onChange={(e) => setSemester(e.target.value)}
                 >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value={10}>1</MenuItem>
-                  <MenuItem value={20}>2</MenuItem>
-                  <MenuItem value={10}>3</MenuItem>
-                  <MenuItem value={20}>4</MenuItem>
-                  <MenuItem value={10}>5</MenuItem>
-                  <MenuItem value={20}>6</MenuItem>
-                  <MenuItem value={10}>7</MenuItem>
-                  <MenuItem value={20}>8</MenuItem>
+                  {sem?.map((s) => (
+                    <MenuItem value={s?._id} key={s?._id}>
+                      {s?.semesterName}
+                    </MenuItem>
+                  ))}
                 </Select>
+                <FormHelperText
+                  sx={{
+                    color: "red",
+                  }}
+                >
+                  {error?.semester}
+                </FormHelperText>
               </FormControl>
             </Grid>
 

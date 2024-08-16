@@ -15,7 +15,7 @@ import Layout from "../layout/Layout";
 import AttendanceTable from "./AttendanceTable";
 import GetAppIcon from "@mui/icons-material/GetApp";
 
-const AttendanceFilter = () => {
+const AttendanceFilter = ({ branchAttendance }) => {
   return (
     <>
       <Card sx={{ padding: "10px", marginTop: "20px" }}>
@@ -121,7 +121,7 @@ const AttendanceFilter = () => {
           </Box>
         </Box>
 
-        <AttendanceTable />
+        <AttendanceTable branchAttendance={branchAttendance} />
       </Card>
     </>
   );

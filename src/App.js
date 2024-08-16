@@ -31,9 +31,12 @@ const App = () => {
             element={<StudentsRegistration />}
           />
           <Route path="/student-leave" element={<Leave />} />
-          <Route path="/student-attendance/:id" element={<Attendance />} />
           <Route
-            path="/student-individual-attendance"
+            path="/student-attendance/:semester/:branch/:session"
+            element={<Attendance />}
+          />
+          <Route
+            path="/student-individual-attendance/:userId/:subjectId"
             element={<IndividualAttendance />}
           />
           <Route

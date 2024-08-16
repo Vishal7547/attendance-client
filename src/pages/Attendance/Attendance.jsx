@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Layout from "../../components/layout/Layout";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
-import { Typography } from "@mui/material";
+import { Typography, useTheme } from "@mui/material";
 import AttendanceFilter from "../../components/Attendance/AttendanceFilter";
+import { useUser } from "../../context/UserProvider";
+import { useParams } from "react-router-dom";
+import { useAttendance } from "../../context/AttendanceProvider";
+import { green } from "@mui/material/colors";
 
 const Item = styled(Paper)(({ theme }) => ({
   //   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -21,6 +25,17 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 const Attendance = () => {
+  const { branch } = useUser();
+  const { theme } = useTheme();
+  const { semester, branch: bro, session } = useParams();
+  const { fetchBranchWiseAttendance, branchAttendance } = useAttendance();
+  useEffect(() => {
+    fetchBranchWiseAttendance(semester, bro, session);
+  }, [semester, bro, session]);
+  const callFun = (a, b) => {
+    console.log(a, b);
+    console.log(a === b);
+  };
   return (
     <Layout>
       <Box sx={{ width: "100%" }} my={4} p={2}>
@@ -30,36 +45,21 @@ const Attendance = () => {
           useFlexGap
           flexWrap="wrap"
         >
-          <Item>
-            <Typography>ECE</Typography>
-            <Typography>70% IN 80DAYS</Typography>
-          </Item>
-          <Item>
-            <Typography>CSE</Typography>
-            <Typography>70% IN 80DAYS</Typography>
-          </Item>
-          <Item>
-            <Typography>MECH</Typography>
-            <Typography>70% IN 80DAYS</Typography>
-          </Item>
-          <Item>
-            <Typography>EEE</Typography>
-            <Typography>70% IN 80DAYS</Typography>
-          </Item>
-          <Item>
-            <Typography>EE</Typography>
-            <Typography>70% IN 80DAYS</Typography>
-          </Item>
-          <Item>
-            <Typography>AI</Typography>
-            <Typography>70% IN 80DAYS</Typography>
-          </Item>
-          <Item>
-            <Typography>IT</Typography>
-            <Typography>70% IN 80DAYS</Typography>
-          </Item>
+          {branch?.map((b, i) => (
+            <Item
+              key={b._id}
+              sx={{
+                backgroundColor: b?._id === bro ? green[500] : "inherit",
+                color: b?._id === bro ? "white" : "inherit",
+              }}
+            >
+              {/* {callFun(b?._id, bro)} */}
+              <Typography>{b?.branchName}</Typography>
+              <Typography>Attendance</Typography>
+            </Item>
+          ))}
         </Stack>
-        <AttendanceFilter />
+        <AttendanceFilter branchAttendance={branchAttendance} />
       </Box>
     </Layout>
   );

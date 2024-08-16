@@ -22,6 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import { useNavigate } from "react-router-dom";
+import Attendance from "../../pages/Attendance/Attendance";
 
 function createData(id, name, calories, fat, carbs, protein, Attendance) {
   return {
@@ -82,11 +83,12 @@ const headCells = [
     label: "Name",
   },
   {
-    id: "calories",
-    numeric: true,
-    disablePadding: false,
-    label: "Subjects",
+    id: "email",
+    numeric: false,
+    disablePadding: true,
+    label: "Email",
   },
+
   {
     id: "fat",
     numeric: true,
@@ -100,10 +102,16 @@ const headCells = [
     label: "Percentage",
   },
   {
-    id: "protein",
+    id: "present",
     numeric: true,
     disablePadding: false,
-    label: "Numeric",
+    label: "present",
+  },
+  {
+    id: "absent",
+    numeric: true,
+    disablePadding: false,
+    label: "absent",
   },
   {
     id: "protein",
@@ -143,7 +151,6 @@ function EnhancedTableHead(props) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            // align={headCell.numeric ? "right" : "left"}
             align="left"
             padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
@@ -234,7 +241,7 @@ EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 
-export default function AttendanceTable() {
+export default function AttendanceTable({ branchAttendance }) {
   const navigate = useNavigate();
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
@@ -296,14 +303,14 @@ export default function AttendanceTable() {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-  const visibleRows = React.useMemo(
-    () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-      ),
-    [order, orderBy, page, rowsPerPage]
-  );
+  // const visibleRows = React.useMemo(
+  //   () =>
+  //     stableSort(rows, getComparator(order, orderBy)).slice(
+  //       page * rowsPerPage,
+  //       page * rowsPerPage + rowsPerPage
+  //     ),
+  //   [order, orderBy, page, rowsPerPage]
+  // );
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -323,7 +330,7 @@ export default function AttendanceTable() {
             rowCount={rows.length}
           />
           <TableBody>
-            {visibleRows.map((row, index) => {
+            {branchAttendance.map((row, index) => {
               const isItemSelected = isSelected(row.id);
               const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -353,11 +360,13 @@ export default function AttendanceTable() {
                     scope="row"
                     padding="none"
                   >
-                    {row.name}
+                    {row.userName}
                   </TableCell>
-                  <TableCell align="left">{row.calories}</TableCell>
-                  <TableCell align="left">{row.fat}</TableCell>
-                  <TableCell align="left">{row.carbs}</TableCell>
+
+                  <TableCell align="left">{row.userEmail}</TableCell>
+                  <TableCell align="left">{row.userRegNo}</TableCell>
+                  <TableCell align="left">{row.protein}</TableCell>
+                  <TableCell align="left">{row.protein}</TableCell>
                   <TableCell align="left">{row.protein}</TableCell>
 
                   <TableCell
